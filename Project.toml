@@ -1,0 +1,13 @@
+name = "UtilityFunctionsLH"
+uuid = "6b9ba4b8-a244-52b4-a4eb-1047c71ea0f4"
+authors = ["hendri54 <hendricksl@protonmail.com>"]
+version = "0.1.0"
+
+[compat]
+julia = "^1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
