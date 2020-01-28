@@ -1,8 +1,8 @@
-mutable struct CRRA <: UtilityOneArg
-   sigma  ::  Float64
-   dbg  ::  Bool
-end
+"""
+	$(SIGNATURES)
 
+Utility from consumption.
+"""
 function utility(uS :: CRRA, cM :: Array{T1}) where
     T1 <: AbstractFloat
 
@@ -21,6 +21,11 @@ function utility(uS :: CRRA, cM :: Array{T1}) where
 end
 
 
+"""
+	$(SIGNATURES)
+
+Marginal utility.
+"""
 function marginal_utility(uS :: CRRA, cM :: Array{T1}) where
     T1 <: AbstractFloat
 
@@ -38,7 +43,9 @@ end
 
 
 """
-Euler equation deviation
+    $(SIGNATURES)
+
+Euler equation deviation.
 """
 function euler_deviation(uS :: UtilityOneArg, beta :: T1, R :: T1,
     cV :: Vector{T1}) where T1 <: AbstractFloat
@@ -49,6 +56,11 @@ function euler_deviation(uS :: UtilityOneArg, beta :: T1, R :: T1,
 end
 
 
+"""
+	$(SIGNATURES)
+
+Consumption growth rate.
+"""
 function cons_growth(uS :: CRRA,  betaR :: T1) where
     T1 <: AbstractFloat
 
@@ -57,8 +69,10 @@ end
 
 
 """
-Present value of consumption as multiple of c1
-Periods 1...T. First not discounted
+    $(SIGNATURES)
+
+Present value of consumption as multiple of c1.
+Periods 1...T. First not discounted.
 """
 function pv_consumption(uS :: CRRA,
     beta :: T1, R :: T1, T :: T2) where
@@ -70,7 +84,9 @@ end
 
 
 """
-Consumption path
+    $(SIGNATURES)
+
+Consumption path.
 """
 function cons_path(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
     ltIncome :: T1) where {T1 <: AbstractFloat, T2 <: Integer}
@@ -80,8 +96,11 @@ function cons_path(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
     return c1 .* (g .^ (0 : (T-1)))
 end
 
+
 """
-Lifetime utility, given present value of income
+    $(SIGNATURES)
+
+Lifetime utility, given present value of income.
 """
 function lifetime_utility(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
     ltIncome :: T1) where {T1 <: AbstractFloat, T2 <: Integer}
@@ -90,8 +109,23 @@ function lifetime_utility(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
         @assert ltIncome .> 0.0  "Negative income"
     end
     utilV = utility(uS, cons_path(uS, beta, R, T, ltIncome));
+    return lifetime_utility(utilV, beta, T)
+end
+
+
+"""
+	$(SIGNATURES)
+
+Lifetime utility for a given utility sequence.
+"""
+function lifetime_utility(utilV :: Vector{T1},  beta :: T1,  T :: Integer)  where T1 <: AbstractFloat
     return sum((beta .^ (0 : (T-1))) .* utilV);
 end
 
+# Same for a constant utility flow
+function lifetime_utility(util :: T1, beta :: T1, T :: Integer) where T1 <: AbstractFloat
+
+    return util * (beta ^ T - 1.0) / (beta - 1.0)
+end
 
 # -----------
