@@ -41,6 +41,10 @@ function marginal_utility(uS :: CRRA, cM :: Array{T1}) where
     return muM
 end
 
+function marginal_utility(uS :: CRRA, c :: T1) where T1 <: AbstractFloat
+    return marginal_utility(uS, [c])[1]
+end
+
 
 """
     $(SIGNATURES)
@@ -84,6 +88,19 @@ end
 
 
 """
+	$(SIGNATURES)
+
+Consumption at age 1 for given lifetime income.
+"""
+function cons_age1(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
+    ltIncome) where {T1 <: AbstractFloat, T2 <: Integer}
+
+    c1 = ltIncome ./ pv_consumption(uS, beta, R, T);
+    return c1
+end
+
+
+"""
     $(SIGNATURES)
 
 Consumption path.
@@ -91,7 +108,7 @@ Consumption path.
 function cons_path(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
     ltIncome :: T1) where {T1 <: AbstractFloat, T2 <: Integer}
 
-    c1 = ltIncome ./ pv_consumption(uS, beta, R, T);
+    c1 = cons_age1(uS, beta, R, T, ltIncome);
     g = cons_growth(uS, beta .* R);
     return c1 .* (g .^ (0 : (T-1)))
 end
@@ -110,6 +127,19 @@ function lifetime_utility(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
     end
     utilV = utility(uS, cons_path(uS, beta, R, T, ltIncome));
     return lifetime_utility(utilV, beta, T)
+end
+
+
+"""
+	$(SIGNATURES)
+
+Marginal utility of initial assets given present value of income.
+"""
+function mu_wealth(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
+    ltIncome) where {T1 <: AbstractFloat, T2 <: Integer}
+
+    c1 = cons_age1(uS, beta, R, T, ltIncome);
+    return marginal_utility(uS, c1)
 end
 
 

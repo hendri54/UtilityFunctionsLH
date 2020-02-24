@@ -48,6 +48,14 @@ function pv_test()
         u1 = lifetime_utility(util0, beta, T);
         u2 = lifetime_utility(fill(util0, T), beta, T);
         @test u1 ≈ u2
+
+        # Marginal utility of wealth
+        ltUtil ≈ lifetime_utility(crraS, beta, R, T, ltIncome);
+        dy = 1e-6;
+        ltUtil2 = lifetime_utility(crraS, beta, R, T, ltIncome + dy);
+        mu = (ltUtil2 - ltUtil) / dy;
+        mu2 = UtilityFunctionsLH.mu_wealth(crraS, beta, R, T, ltIncome);
+        @test isapprox(mu, mu2, atol = 1e-5)
     end
 end
 

@@ -1,8 +1,8 @@
 module UtilityFunctionsLH
 
 using ArgCheck, DocStringExtensions
-export CRRA, utility, marginal_utility, cons_growth, cons_path,
-    euler_deviation, lifetime_utility,
+export CRRA, utility, marginal_utility, cons_age1, cons_growth, cons_path,
+    euler_deviation, lifetime_utility, mu_wealth,
     pv_consumption
 
 
