@@ -16,14 +16,15 @@ abstract type UtilityOneArg <: UtilityFunction end
 	$(SIGNATURES)
 
 Utility = c^(1-sigma) / (1-sigma) - 1.0.
+
+Log utility is special case when `sigma == 1.0`.
 """
 mutable struct CRRA <: UtilityOneArg
     sigma  ::  Float64
     dbg  ::  Bool
  end
- 
- 
 
+ 
 include("crra.jl")
 
 end

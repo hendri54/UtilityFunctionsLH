@@ -11,10 +11,10 @@ function utility(uS :: CRRA, cM :: Array{T1}) where
     end
 
   if uS.sigma == 1.0
-    utilM = log(cM)
+    utilM = log.(cM);
   else
      oneMinusSigma = 1.0 - uS.sigma;
-     utilM = (cM .^ oneMinusSigma) ./ oneMinusSigma .- 1.0
+     utilM = (cM .^ oneMinusSigma) ./ oneMinusSigma .- 1.0;
      # muM = cM .^ (-pSigma)
   end
   return utilM
