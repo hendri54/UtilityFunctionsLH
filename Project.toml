@@ -1,7 +1,7 @@
 name = "UtilityFunctionsLH"
 uuid = "6b9ba4b8-a244-52b4-a4eb-1047c71ea0f4"
 authors = ["hendri54 <hendricksl@protonmail.com>"]
-version = "0.2.5"
+version = "0.2.6"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
