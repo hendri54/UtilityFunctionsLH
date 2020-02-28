@@ -3,21 +3,18 @@
 
 Utility from consumption.
 """
-function utility(uS :: CRRA, cM :: Array{T1}) where
-    T1 <: AbstractFloat
-
+function utility(uS :: CRRA, cM)
     if uS.dbg
         @assert all(cM .> 0.0)  "Negative consumption"
     end
 
-  if uS.sigma == 1.0
-    utilM = log.(cM);
-  else
-     oneMinusSigma = 1.0 - uS.sigma;
-     utilM = (cM .^ oneMinusSigma) ./ oneMinusSigma .- 1.0;
-     # muM = cM .^ (-pSigma)
-  end
-  return utilM
+    if uS.sigma == 1.0
+        utilM = log.(cM);
+    else
+        oneMinusSigma = 1.0 - uS.sigma;
+        utilM = (cM .^ oneMinusSigma) ./ oneMinusSigma .- 1.0;
+    end
+    return utilM
 end
 
 
