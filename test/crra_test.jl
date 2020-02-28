@@ -5,6 +5,8 @@ function crra_test()
             crraS = CRRA(pSigma, true);
             cM = collect(range(2.0, 3.0, length = 4)) * collect(range(1.5, 2.5, length = 5))';
             uM = utility(crraS, cM);
+            u5 = utility(crraS, cM[5]);
+            @test u5 ≈ uM[5]
             muM = marginal_utility(crraS, cM);
             @test size(cM) == size(uM)
             @test all(muM .> 0)

@@ -17,6 +17,10 @@ function utility(uS :: CRRA, cM)
     return utilM
 end
 
+function utility(uS :: CRRA, c :: T1) where T1 <: AbstractFloat
+    return utility(uS, [c])[1]
+end
+
 
 """
 	$(SIGNATURES)
