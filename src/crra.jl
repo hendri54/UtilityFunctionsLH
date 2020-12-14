@@ -3,22 +3,31 @@
 
 Utility from consumption.
 """
-function utility(uS :: CRRA, cM)
+function utility(uS :: CRRA, cM :: AbstractArray{F1}) where F1
     if uS.dbg
-        @assert all(x -> x .> 0.0, cM)  "Negative consumption"
+        @assert all(x -> x .> zero(F1), cM)  "Negative consumption"
     end
 
     if uS.sigma == 1.0
         utilM = log.(cM);
     else
-        oneMinusSigma = 1.0 - uS.sigma;
-        utilM = (cM .^ oneMinusSigma) ./ oneMinusSigma .- 1.0;
+        utilM = utility_crra(cM, 1.0 - uS.sigma);
     end
     return utilM
 end
 
+# utility_log(cM) = log.(cM);
+utility_crra(cM, oneMinusSigma) = (cM .^ oneMinusSigma) ./ oneMinusSigma .- 1.0;
+
+
 function utility(uS :: CRRA, c :: T1) where T1 <: AbstractFloat
-    return utility(uS, [c])[1]
+    if uS.sigma == 1.0
+        utilM = log(c);
+    else
+        # oneMinusSigma = 1.0 - uS.sigma;
+        utilM = utility_crra(c, 1.0 - uS.sigma);
+    end
+    return utilM
 end
 
 
@@ -27,7 +36,7 @@ end
 
 Marginal utility.
 """
-function marginal_utility(uS :: CRRA, cM :: Array{T1}) where
+function marginal_utility(uS :: CRRA, cM :: AbstractArray{T1}) where
     T1 <: AbstractFloat
 
     if uS.dbg
@@ -43,7 +52,12 @@ function marginal_utility(uS :: CRRA, cM :: Array{T1}) where
 end
 
 function marginal_utility(uS :: CRRA, c :: T1) where T1 <: AbstractFloat
-    return marginal_utility(uS, [c])[1]
+    if uS.sigma == 1.0
+        muM = one(T1) / c;
+    else
+        muM = c ^ (-uS.sigma);
+    end
+    return muM
 end
 
 
@@ -69,7 +83,7 @@ Consumption growth factor. Constant for CRRA. Otherwise this would have to depen
 function cons_growth(uS :: CRRA,  betaR :: T1) where
     T1 <: AbstractFloat
 
-    return betaR ^ (one(T1) / uS.sigma)
+    return betaR ^ (1.0 / uS.sigma)
 end
 
 
@@ -142,21 +156,30 @@ function lifetime_utility(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
     if uS.dbg
         @assert ltIncome .> 0.0  "Negative income"
     end
-    cGrowthFactor = cons_growth(uS, beta * R);
-    c1 = cons_age1(uS, beta, R, T, ltIncome);
-    util1 = utility(uS, c1);
 
-    ltu = util1;
-    ct = c1;
-    betaFactor = one(T1);
-    for t = 2 : T
-        ct *= cGrowthFactor;
-        betaFactor *= beta;
-        ltu += betaFactor * utility(uS, ct);
-    end
-    return ltu
-    # utilV = utility(uS, cons_path(uS, beta, R, T, ltIncome));
-    # return lifetime_utility(utilV, beta, T)
+    # cGrowthFactor = cons_growth(uS, beta * R);
+    # c1 = cons_age1(uS, beta, R, T, ltIncome);
+
+    # if uS.sigma == 1
+    #   uFct = c -> log.(c);
+    # else
+    #   uFct = c -> utility_crra(c, 1.0 - uS.sigma);
+    # end
+    # util1 = uFct(c1);
+    # # util1 = utility(uS, c1);
+
+    # ltu = util1;
+    # ct = c1;
+    # betaFactor = one(T1);
+    # for t = 2 : T
+    #     ct *= cGrowthFactor;
+    #     betaFactor *= beta;
+    #     ltu += betaFactor * uFct(ct);
+    #     # utility(uS, ct);
+    # end
+    # return ltu
+    utilV = utility(uS, cons_path(uS, beta, R, T, ltIncome));
+    return lifetime_utility(utilV, beta, T)
 end
 
 
