@@ -36,6 +36,8 @@ function pv_test()
             ltIncome = 17.3;
             cV = cons_path(crraS, beta, R, T, ltIncome);
             @test length(cV) == T  &&  all(cV .> 0.0)
+            cGrowthV = cV[2 : T] ./ cV[1 : (T-1)];
+            @test all(abs.(cGrowthV .- g) .< 1e-4)
             discV = (1/R) .^ (0 : (T-1));
             pv = sum(cV .* discV);
             @test pv ≈ ltIncome
@@ -44,6 +46,9 @@ function pv_test()
             @test all(abs.(devV) .< 1e-4)
 
             utilV = utility(crraS, cV);
+            # uGrowth = util_growth(crraS, g);
+            # uGrowthV = utilV[2 : T] ./ utilV[1 : (T-1)];
+            # @test all(abs.(uGrowthV .- uGrowth) .< 1e-4)
             betaV = beta .^ (0 : (T-1));
             ltUtil = sum(utilV .* betaV);
             @test ltUtil ≈ lifetime_utility(crraS, beta, R, T, ltIncome)

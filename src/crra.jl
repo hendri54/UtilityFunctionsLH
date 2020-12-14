@@ -5,7 +5,7 @@ Utility from consumption.
 """
 function utility(uS :: CRRA, cM)
     if uS.dbg
-        @assert all(cM .> 0.0)  "Negative consumption"
+        @assert all(x -> x .> 0.0, cM)  "Negative consumption"
     end
 
     if uS.sigma == 1.0
@@ -31,11 +31,11 @@ function marginal_utility(uS :: CRRA, cM :: Array{T1}) where
     T1 <: AbstractFloat
 
     if uS.dbg
-        @assert all(cM .> 0.0)  "Negative consumption"
+        @assert all(x -> x > 0.0, cM)  "Negative consumption"
     end
 
     if uS.sigma == 1.0
-        muM = 1.0 ./ cM;
+        muM = one(T1) ./ cM;
     else
         muM = cM .^ (-uS.sigma);
     end
@@ -64,13 +64,23 @@ end
 """
 	$(SIGNATURES)
 
-Consumption growth rate.
+Consumption growth factor. Constant for CRRA. Otherwise this would have to depend on consumption levels.
 """
 function cons_growth(uS :: CRRA,  betaR :: T1) where
     T1 <: AbstractFloat
 
-    return betaR .^ (1.0 ./ uS.sigma)
+    return betaR ^ (one(T1) / uS.sigma)
 end
+
+
+# """
+# 	$(SIGNATURES)
+
+# Growth rate of utility.
+# Input is consumption growth factor.
+# """
+# util_growth(uS :: CRRA, cGrowthFactor :: T1) where T1 <: AbstractFloat = 
+#     cGrowthFactor ^ (one(T1) - uS.sigma);
 
 
 """
@@ -84,7 +94,9 @@ function pv_consumption(uS :: CRRA,
     {T1 <: AbstractFloat, T2 <: Integer}
 
     g = cons_growth(uS, beta * R);
-    return ((g/R) ^ T - 1.0) / (g/R - 1.0)
+    pv = const_growth_sum(g/R, T);
+    return pv
+    # return ((g/R) ^ T - one(T1)) / (g/R - one(T1))
 end
 
 
@@ -111,7 +123,9 @@ function cons_path(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
 
     c1 = cons_age1(uS, beta, R, T, ltIncome);
     g = cons_growth(uS, beta .* R);
-    return c1 .* (g .^ (0 : (T-1)))
+    cV = const_growth_vector(c1, g, T);
+    return cV
+    # return c1 .* (g .^ (0 : (T-1)))
 end
 
 
@@ -119,6 +133,8 @@ end
     $(SIGNATURES)
 
 Lifetime utility, given present value of income.
+
+Note that the growth rate of utility is not constant (because of the -1 in the utility function). So lifetime utility has to be computed from the consumption or utility path.
 """
 function lifetime_utility(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
     ltIncome :: T1) where {T1 <: AbstractFloat, T2 <: Integer}
@@ -126,8 +142,21 @@ function lifetime_utility(uS :: CRRA, beta :: T1, R :: T1, T :: T2,
     if uS.dbg
         @assert ltIncome .> 0.0  "Negative income"
     end
-    utilV = utility(uS, cons_path(uS, beta, R, T, ltIncome));
-    return lifetime_utility(utilV, beta, T)
+    cGrowthFactor = cons_growth(uS, beta * R);
+    c1 = cons_age1(uS, beta, R, T, ltIncome);
+    util1 = utility(uS, c1);
+
+    ltu = util1;
+    ct = c1;
+    betaFactor = one(T1);
+    for t = 2 : T
+        ct *= cGrowthFactor;
+        betaFactor *= beta;
+        ltu += betaFactor * utility(uS, ct);
+    end
+    return ltu
+    # utilV = utility(uS, cons_path(uS, beta, R, T, ltIncome));
+    # return lifetime_utility(utilV, beta, T)
 end
 
 
@@ -150,7 +179,7 @@ end
 Lifetime utility for a given utility sequence.
 """
 function lifetime_utility(utilV :: Vector{T1},  beta :: T1,  T :: Integer)  where T1 <: AbstractFloat
-    return sum((beta .^ (0 : (T-1))) .* utilV);
+    return discounted_sum(beta, utilV);
 end
 
 # Same for a constant utility flow
